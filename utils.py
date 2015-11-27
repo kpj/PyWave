@@ -57,7 +57,6 @@ class LatticeState(object):
             quiescent/refractory cell -> 0
             firing cell -> 1
         """
-
         # this function gets executed once per timestep
         for j in range(self.width):
             for i in range(self.height):
@@ -72,9 +71,15 @@ class LatticeState(object):
                         if tau < config.t_rrp:
                             self.tau_matrix[i, j] += config.dt
 
+                        # check threshold
                         if camp[i, j] > t:
                             self.state_matrix[i, j] = 1
-                            self.tau_matrix[i, j] = -1
+                            self.tau_matrix[i, j] = -config.t_f
+
+                        # handle pacemaker
+                        if (i, j) in self.pacemakers and npr.random() < config.p:
+                            self.state_matrix[i, j] = 1
+                            self.tau_matrix[i, j] = -config.t_f
                     else: # in ARP
                         self.tau_matrix[i, j] += config.dt
                 else: # firing
@@ -175,7 +180,7 @@ def setup_configuration(
         p=0.002,
         c_min=4, c_max=100,
         t_arp=2, t_rrp=7, t_f=1,
-        dt=0.01, t_max=1000):
+        dt=0.01, t_max=100):
     """ Set model paremeters
     """
     return Configuration({
