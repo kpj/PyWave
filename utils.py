@@ -9,15 +9,47 @@ import matplotlib.cm as cm
 import matplotlib.animation as animation
 
 
+class Configuration(dict):
+    """ Dict with dot-notation access functionality
+    """
+    def __getattr__(self, attr):
+        return self.get(attr)
+
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
 class LatticeState(object):
     """ Treat 1D list as 2D lattice and handle coupled system
         This helps with simply passing this object to scipy's odeint
     """
-    def __init__(self, width, height):
+    def __init__(self, width, height, pacemakers=[]):
         """ Initialize lattice
         """
         self.width = width
         self.height = height
+        self.pacemakers = pacemakers
+
+    def _laplacian(self, i, j, data):
+        """ Compute discretized laplacian on Moore neighborhood
+        """
+        M = np.ones((3, 3)) * 1/2
+        M[1, 1] = -4
+
+        return sum([
+            M[k, l] * data[i+k-2, j+l-2]
+                for l in range(3)
+                for k in range(3)
+        ])
+
+    def _state_matrix(self, i, j, data, threshold=0.8):
+        """ Compute state matrix value, with
+            refractory cell -> 0
+            firing cell -> 1
+        """
+        if (i, j) in self.pacemakers:
+            return 1
+        else:
+            return data[i, j] > threshold
 
     def get_size(self):
         """ Return number of cells in underlying system
@@ -38,8 +70,10 @@ class LatticeState(object):
 
         for j in range(self.width):
             for i in range(self.height):
-                camp[i, j] = i*j
-                exci[i, j] = i+j
+                camp[i, j] = -config.gamma * camp[i, j] \
+                    + config.r * self._state_matrix(i, j, camp) \
+                    + config.D * self._laplacian(i, j, camp)
+                exci[i, j] = config.eta + config.beta * camp[i, j]
 
         flat_camp = np.reshape(camp, self.get_size())
         flat_exci = np.reshape(exci, self.get_size())
@@ -90,3 +124,21 @@ def animate_evolution(system, fname='lattice.gif'):
 
     ani.save(fname, writer='imagemagick', fps=10)#, dpi=200)
     plt.close()
+
+def setup_configuration(
+        gamma=8, r=300, D=2.3e-7,
+        eta=0, beta=0.2):
+    """ Set model paremeters
+    """
+    return Configuration({
+        'gamma': gamma,
+        'r': r,
+        'D': D,
+        'eta': eta,
+        'beta': beta
+    })
+
+
+# setup model config
+global config
+config = setup_configuration()

@@ -11,7 +11,7 @@ from utils import LatticeState, animate_evolution
 def generate_system(i, j):
     """ Setup lattice of size `i`x`j`
     """
-    system = LatticeState(i, j)
+    system = LatticeState(i, j, pacemakers=[(0, 0)])
     print(system)
 
     return system
@@ -29,7 +29,7 @@ def integrate_system(system):
     res = odeint(func, init, t_range)
     camp_res, exci_res = system.parse_result(res)
 
-    return camp_res
+    return exci_res
 
 def plot_system(system):
     """ Visualize system state over time
