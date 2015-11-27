@@ -33,6 +33,9 @@ class LatticeState(object):
         self.discrete_laplacian = np.ones((3, 3)) * 1/2
         self.discrete_laplacian[1, 1] = -4
 
+        self.state_matrix = np.zeros((width, height))
+        self.tau_matrix = np.ones((width, height)) * (-config.t_arp) # in ARP
+
     def _laplacian(self, i, j, data):
         """ Compute discretized laplacian on Moore neighborhood
         """
@@ -49,15 +52,37 @@ class LatticeState(object):
                 for k in range(3)
         ])
 
-    def _state_matrix(self, i, j, data, threshold=0.8):
+    def _update_state_matrix(self, camp, exci):
         """ Compute state matrix value, with
-            refractory cell -> 0
+            quiescent/refractory cell -> 0
             firing cell -> 1
         """
-        if (i, j) in self.pacemakers and npr.random() < config.p:
-            return 1
-        else:
-            return data[i, j] > threshold
+
+        # this function gets executed once per timestep
+        for j in range(self.width):
+            for i in range(self.height):
+                tau = self.tau_matrix[i, j]
+                if self.state_matrix[i, j] == 0: # not firing
+                    if tau >= 0: # in RRP
+                        A = ((config.t_rrp + config.t_arp) \
+                            * (config.c_max - config.c_min)) / config.t_rrp
+                        t = (config.c_max - A * (tau / (tau + config.t_arp))) \
+                            * (1 - exci[i, j])
+
+                        if tau < config.t_rrp:
+                            self.tau_matrix[i, j] += config.dt
+
+                        if camp[i, j] > t:
+                            self.state_matrix[i, j] = 1
+                            self.tau_matrix[i, j] = -1
+                    else: # in ARP
+                        self.tau_matrix[i, j] += config.dt
+                else: # firing
+                    self.tau_matrix[i, j] += config.dt
+
+                    if self.tau_matrix[i, j] >= 0:
+                        self.state_matrix[i, j] = 0
+                        self.tau_matrix[i, j] = -config.t_arp
 
     def get_size(self):
         """ Return number of cells in underlying system
@@ -73,18 +98,28 @@ class LatticeState(object):
                 exci00, exci01, .. ,exci0m, exci10, .., excinm
             ]
         """
-        camp = np.zeros((self.width, self.height))
-        exci = np.zeros((self.width, self.height))
+        # parse ODE state
+        flat_camp = state[:self.get_size()]
+        flat_exci = state[self.get_size():]
+
+        camp = np.reshape(flat_camp, (self.width, self.height))
+        exci = np.reshape(flat_exci, (self.width, self.height))
+
+        # compute next iteration
+        self._update_state_matrix(camp, exci)
+
+        next_camp = np.zeros((self.width, self.height))
+        next_exci = np.zeros((self.width, self.height))
 
         for j in range(self.width):
             for i in range(self.height):
-                camp[i, j] = -config.gamma * camp[i, j] \
-                    + config.r * self._state_matrix(i, j, camp) \
+                next_camp[i, j] = -config.gamma * camp[i, j] \
+                    + config.r * self.state_matrix[i, j] \
                     + config.D * self._laplacian(i, j, camp)
-                exci[i, j] = config.eta + config.beta * camp[i, j]
+                next_exci[i, j] = config.eta + config.beta * camp[i, j]
 
-        flat_camp = np.reshape(camp, self.get_size())
-        flat_exci = np.reshape(exci, self.get_size())
+        flat_camp = np.reshape(next_camp, self.get_size())
+        flat_exci = np.reshape(next_exci, self.get_size())
 
         return np.append(flat_camp, flat_exci)
 
@@ -137,19 +172,25 @@ def animate_evolution(states, pacemakers, fname='lattice.gif'):
 def setup_configuration(
         gamma=8, r=300, D=2.3e-7,
         eta=0, beta=0.2,
-        p=0.002):
+        p=0.002,
+        c_min=4, c_max=100,
+        t_arp=2, t_rrp=7, t_f=1,
+        dt=0.01, t_max=1000):
     """ Set model paremeters
     """
     return Configuration({
-        'gamma': gamma,
-        'r': r,
-        'D': D,
-        'eta': eta,
-        'beta': beta,
-        'p': p
+        'gamma': gamma, 'r': r, 'D': D,
+        'eta': eta, 'beta': beta,
+        'p': p,
+        'c_min': c_min, 'c_max': c_max,
+        't_arp': t_arp, 't_rrp': t_rrp, 't_f': t_f,
+        'dt': dt, 't_max': t_max
     })
 
 
 # setup model config
 global config
+def get_config():
+    return config
+
 config = setup_configuration()

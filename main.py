@@ -6,7 +6,7 @@ import numpy as np
 import numpy.random as npr
 from scipy.integrate import odeint
 
-from utils import LatticeState, animate_evolution
+from utils import get_config, LatticeState, animate_evolution
 
 
 def generate_system(i, j):
@@ -32,7 +32,7 @@ def integrate_system(system):
         return system.get_ode(state, t)
 
     init = [0.5] * system.get_size() * 2
-    t_range = np.arange(0, 10, 0.1)
+    t_range = np.arange(0, config.t_max, config.dt)
 
     res = odeint(func, init, t_range)
     camp_res, exci_res = system.parse_result(res)
@@ -51,6 +51,9 @@ def plot_system(system, pacemakers):
 def main():
     """ Main interface
     """
+    global config
+    config = get_config()
+
     system = generate_system(4, 4)
     cres = integrate_system(system)
     plot_system(cres, system.pacemakers)
