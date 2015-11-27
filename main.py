@@ -39,21 +39,21 @@ def integrate_system(system):
 
     return camp_res
 
-def plot_system(system):
+def plot_system(system, pacemakers):
     """ Visualize system state over time
     """
     # roll axes to make time-access easier
     rolled_system = np.rollaxis(system, 2)
 
     # create animation
-    animate_evolution(rolled_system)
+    animate_evolution(rolled_system, pacemakers)
 
 def main():
     """ Main interface
     """
-    system = generate_system(20, 20)
+    system = generate_system(4, 4)
     cres = integrate_system(system)
-    plot_system(cres)
+    plot_system(cres, system.pacemakers)
 
 
 if __name__ == '__main__':

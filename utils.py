@@ -107,27 +107,28 @@ class LatticeState(object):
         """
         return '%dx%d' % (self.width, self.height)
 
-def animate_evolution(system, fname='lattice.gif'):
+def animate_evolution(states, pacemakers, fname='lattice.gif'):
     """ Animation evolution of lattice over time
     """
     plt.gca().get_xaxis().set_visible(False)
     plt.gca().get_yaxis().set_visible(False)
 
     im = plt.imshow(
-        system[0],
+        states[0],
         cmap=cm.gray, interpolation='nearest',
-        vmin=np.amin(system), vmax=np.amax(system)
+        vmin=np.amin(states), vmax=np.amax(states)
     )
     plt.colorbar(im)
+    plt.scatter(*zip(*pacemakers), marker='+', color='red')
 
     def update(t):
         plt.suptitle(r'$t = %d$' % t)
-        im.set_data(system[t])
+        im.set_data(states[t])
         return im,
 
     ani = animation.FuncAnimation(
         plt.gcf(), update,
-        frames=len(system)
+        frames=len(states)
     )
 
     ani.save(fname, writer='imagemagick', fps=10)#, dpi=200)
