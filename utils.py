@@ -3,6 +3,7 @@ General utilities module
 """
 
 import numpy as np
+import numpy.random as npr
 
 import matplotlib.pylab as plt
 import matplotlib.cm as cm
@@ -46,7 +47,7 @@ class LatticeState(object):
             refractory cell -> 0
             firing cell -> 1
         """
-        if (i, j) in self.pacemakers:
+        if (i, j) in self.pacemakers and npr.random() < config.p:
             return 1
         else:
             return data[i, j] > threshold
@@ -127,7 +128,8 @@ def animate_evolution(system, fname='lattice.gif'):
 
 def setup_configuration(
         gamma=8, r=300, D=2.3e-7,
-        eta=0, beta=0.2):
+        eta=0, beta=0.2,
+        p=0.002):
     """ Set model paremeters
     """
     return Configuration({
@@ -135,7 +137,8 @@ def setup_configuration(
         'r': r,
         'D': D,
         'eta': eta,
-        'beta': beta
+        'beta': beta,
+        'p': p
     })
 
 

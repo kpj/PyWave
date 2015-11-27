@@ -3,6 +3,7 @@ Reproduction of figure from Sawai et al. (2005)
 """
 
 import numpy as np
+import numpy.random as npr
 from scipy.integrate import odeint
 
 from utils import LatticeState, animate_evolution
@@ -11,7 +12,14 @@ from utils import LatticeState, animate_evolution
 def generate_system(i, j):
     """ Setup lattice of size `i`x`j`
     """
-    system = LatticeState(i, j, pacemakers=[(0, 0)])
+    pacemakers = []
+    for _ in range(i):
+        pacemakers.append((
+            npr.randint(0, i),
+            npr.randint(0, j)
+        ))
+
+    system = LatticeState(i, j, pacemakers=pacemakers)
     print(system)
 
     return system
@@ -24,12 +32,12 @@ def integrate_system(system):
         return system.get_ode(state, t)
 
     init = [0.5] * system.get_size() * 2
-    t_range = np.arange(0, 5, 0.1)
+    t_range = np.arange(0, 10, 0.1)
 
     res = odeint(func, init, t_range)
     camp_res, exci_res = system.parse_result(res)
 
-    return exci_res
+    return camp_res
 
 def plot_system(system):
     """ Visualize system state over time
@@ -43,7 +51,7 @@ def plot_system(system):
 def main():
     """ Main interface
     """
-    system = generate_system(2, 2)
+    system = generate_system(20, 20)
     cres = integrate_system(system)
     plot_system(cres)
 
