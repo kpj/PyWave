@@ -30,14 +30,21 @@ class LatticeState(object):
         self.height = height
         self.pacemakers = pacemakers
 
+        self.discrete_laplacian = np.ones((3, 3)) * 1/2
+        self.discrete_laplacian[1, 1] = -4
+
     def _laplacian(self, i, j, data):
         """ Compute discretized laplacian on Moore neighborhood
         """
-        M = np.ones((3, 3)) * 1/2
-        M[1, 1] = -4
-
         return sum([
-            M[k, l] * data[i+k-2, j+l-2]
+            self.discrete_laplacian[k, l] \
+            * (data[i+k-1, j+l-1]
+                if  i+k-1 < len(data)
+                    and j+l-1 < len(data)
+                    and i+k-1 >= 0
+                    and j+l-1 >= 0
+                else 0
+            )
                 for l in range(3)
                 for k in range(3)
         ])
