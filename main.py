@@ -31,7 +31,7 @@ def integrate_system(system):
     def func(state, t):
         return system.get_ode(state, t)
 
-    init = [0.5] * system.get_size() * 2
+    init = [0] * system.get_size() * 2
     t_range = np.arange(0, config.t_max, config.dt)
 
     res = odeint(func, init, t_range)
