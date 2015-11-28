@@ -7,7 +7,8 @@ import numpy.random as npr
 
 from progressbar import ProgressBar
 
-from utils import get_config, LatticeState, animate_evolution
+from configuration import get_config
+from utils import LatticeState, animate_evolution
 
 
 def generate_system(i, j=None):
