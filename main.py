@@ -41,7 +41,7 @@ def integrate_system(system):
     pbar.start()
     while t < config.t_max:
         data.append(state)
-        state = state + config.dt * system.get_ode(state, t)
+        state += config.dt * system.get_ode(state, t)
         t += config.dt
         pbar.update(int(t))
     pbar.finish()
