@@ -4,7 +4,8 @@ Reproduction of figure from Sawai et al. (2005)
 
 import numpy as np
 import numpy.random as npr
-from scipy.integrate import odeint
+
+from progressbar import ProgressBar
 
 from utils import get_config, LatticeState, animate_evolution
 
@@ -28,18 +29,23 @@ def generate_system(i, j=None):
     return system
 
 def integrate_system(system):
-    """ Integrate ODE-CA hybrid.
+    """ Integrate ODE-CA hybrid with simple Euler method
         Levine et al. (1996)
     """
-    def func(state, t):
-        return system.get_ode(state, t)
+    t = 0
+    state = [0] * system.get_size() * 2
 
-    init = [0] * system.get_size() * 2
-    t_range = np.arange(0, config.t_max, config.dt)
+    pbar = ProgressBar(maxval=config.t_max)
+    data = []
+    pbar.start()
+    while t < config.t_max:
+        data.append(state)
+        state = state + config.dt * system.get_ode(state, t)
+        t += config.dt
+        pbar.update(int(t))
+    pbar.finish()
 
-    res = odeint(func, init, t_range)
-    camp_res, exci_res = system.parse_result(res)
-
+    camp_res, exci_res = system.parse_result(np.array(data))
     return camp_res
 
 def plot_system(system, pacemakers):
