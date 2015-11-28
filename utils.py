@@ -219,3 +219,15 @@ def get_config():
     return config
 
 config = setup_configuration()
+
+
+# plot data from previous run
+if __name__ == '__main__':
+    import sys
+
+    if len(sys.argv) != 2:
+        print('Usage: %s <data file>' % sys.argv[0])
+        sys.exit(1)
+
+    data = np.load(sys.argv[1])
+    animate_evolution(data[0], data[1])
