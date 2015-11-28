@@ -60,34 +60,50 @@ class LatticeState(object):
         # this function gets executed once per timestep
         for j in range(self.width):
             for i in range(self.height):
-                tau = self.tau_matrix[i, j]
                 if self.state_matrix[i, j] == 0: # not firing
-                    if tau >= 0: # in RRP
-                        A = ((config.t_rrp + config.t_arp) \
-                            * (config.c_max - config.c_min)) / config.t_rrp
-                        t = (config.c_max - A * (tau / (tau + config.t_arp))) \
-                            * (1 - exci[i, j])
-
-                        if tau < config.t_rrp:
-                            self.tau_matrix[i, j] += config.dt
-
-                        # check threshold
-                        if camp[i, j] > t:
-                            self.state_matrix[i, j] = 1
-                            self.tau_matrix[i, j] = -config.t_f
-
-                        # handle pacemaker
-                        if (i, j) in self.pacemakers and npr.random() < config.p:
-                            self.state_matrix[i, j] = 1
-                            self.tau_matrix[i, j] = -config.t_f
-                    else: # in ARP
-                        self.tau_matrix[i, j] += config.dt
+                    self.handle_off_cell(i, j, camp, exci)
                 else: # firing
-                    self.tau_matrix[i, j] += config.dt
+                    self.handle_on_cell(i, j)
 
-                    if self.tau_matrix[i, j] >= 0:
-                        self.state_matrix[i, j] = 0
-                        self.tau_matrix[i, j] = -config.t_arp
+    def handle_on_cell(self, i, j):
+        """ Handle cell where state_matrix == 1
+        """
+        self.tau_matrix[i, j] += config.dt
+
+        if self.tau_matrix[i, j] >= 0: # end of firing reached
+            self.state_matrix[i, j] = 0
+            self.tau_matrix[i, j] = -config.t_arp
+
+    def handle_off_cell(self, i, j, camp, exci):
+        """ Handle cell where state_matrix == 0
+        """
+        tau = self.tau_matrix[i, j]
+
+        if tau >= 0: # in RRP
+            A = ((config.t_rrp + config.t_arp) \
+                * (config.c_max - config.c_min)) / config.t_rrp
+            t = (config.c_max - A * (tau / (tau + config.t_arp))) \
+                * (1 - exci[i, j])
+
+            # increase time up to t_rrp
+            if tau < config.t_rrp:
+                self.tau_matrix[i, j] += config.dt
+
+            # check threshold
+            if camp[i, j] > t:
+                self.fire_cell(i, j)
+
+            # handle pacemaker
+            if (i, j) in self.pacemakers and npr.random() < config.p:
+                self.fire_cell(i, j)
+        else: # in ARP
+            self.tau_matrix[i, j] += config.dt
+
+    def fire_cell(self, i, j):
+        """ Fire cell `i`x`j`
+        """
+        self.state_matrix[i, j] = 1
+        self.tau_matrix[i, j] = -config.t_f
 
     def get_size(self):
         """ Return number of cells in underlying system
