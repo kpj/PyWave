@@ -9,9 +9,12 @@ from scipy.integrate import odeint
 from utils import get_config, LatticeState, animate_evolution
 
 
-def generate_system(i, j):
+def generate_system(i, j=None):
     """ Setup lattice of size `i`x`j`
     """
+    if j is None:
+        j = i
+
     pacemakers = []
     for _ in range(i):
         pacemakers.append((
@@ -54,7 +57,7 @@ def main():
     global config
     config = get_config()
 
-    system = generate_system(4, 4)
+    system = generate_system(4)
     cres = integrate_system(system)
     plot_system(cres, system.pacemakers)
 
