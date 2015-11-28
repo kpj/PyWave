@@ -64,7 +64,7 @@ def main():
     global config
     config = get_config()
 
-    system = generate_system(4)
+    system = generate_system(config.grid_size)
     cres = integrate_system(system)
     plot_system(cres, system.pacemakers)
 
