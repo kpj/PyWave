@@ -5,6 +5,8 @@ General utilities module
 import numpy as np
 import numpy.random as npr
 
+from scipy import ndimage
+
 import matplotlib.pylab as plt
 import matplotlib.cm as cm
 import matplotlib.animation as animation
@@ -30,22 +32,6 @@ class LatticeState(object):
 
         self.state_matrix = np.zeros((width, height))
         self.tau_matrix = np.ones((width, height)) * (-config.t_arp) # in ARP
-
-    def _laplacian(self, i, j, data):
-        """ Compute discretized laplacian on Moore neighborhood
-        """
-        return sum([
-            self.discrete_laplacian[k, l] \
-            * (data[i+k-1, j+l-1]
-                if  i+k-1 < len(data)
-                    and j+l-1 < len(data)
-                    and i+k-1 >= 0
-                    and j+l-1 >= 0
-                else 0
-            )
-                for l in range(3)
-                for k in range(3)
-        ])
 
     def _update_state_matrix(self, camp, exci):
         """ Compute state matrix value, with
@@ -127,11 +113,16 @@ class LatticeState(object):
         next_camp = np.zeros((self.width, self.height))
         next_exci = np.zeros((self.width, self.height))
 
+        laplacian_conv = ndimage.convolve(
+            camp, self.discrete_laplacian,
+            mode='constant', cval=0.0
+        )
+
         for j in range(self.width):
             for i in range(self.height):
                 next_camp[i, j] = -config.gamma * camp[i, j] \
                     + config.r * self.state_matrix[i, j] \
-                    + config.D * self._laplacian(i, j, camp)
+                    + config.D * laplacian_conv[i, j]
 
                 if exci[i, j] < config.e_max:
                     next_exci[i, j] = config.eta + config.beta * camp[i, j]
