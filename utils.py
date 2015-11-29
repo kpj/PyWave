@@ -163,7 +163,10 @@ def animate_evolution(states, pacemakers, fname='lattice.gif'):
         vmin=np.amin(states), vmax=np.amax(states)
     )
     plt.colorbar(im)
-    plt.scatter(*zip(*[reversed(p) for p in pacemakers]), marker='+', color='red')
+    plt.scatter(
+        *zip(*[reversed(p) for p in pacemakers]),
+        marker='+', color='red'
+    )
 
     def update(t):
         plt.suptitle(r'$t = %d$' % t)
