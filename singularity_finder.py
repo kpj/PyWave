@@ -17,7 +17,9 @@ from scipy import ndimage
 def compute_tau(cell_evo):
     """ Compute tau as first zero crossing of autocorrelation
     """
-    acorr = np.correlate(cell_evo, cell_evo, mode='same')
+    #acorr = np.correlate(cell_evo, cell_evo, mode='same')
+    acorr = np.correlate(cell_evo, cell_evo, mode='full')[len(cell_evo)-1:]
+
     sign_changes = (np.diff(np.sign(acorr)) != 0)
     if not any(sign_changes):
         raise RuntimeError('No sign change detected')
@@ -80,7 +82,7 @@ def compute_discrete_gradient(field):
 def differentiate(camp):
     """ Compute discretized nabla of local phase
     """
-    depth, width, height = camp.shape
+    width, height, depth = camp.shape
 
     # compute thetas
     theta = np.empty((width, height)).tolist()
@@ -93,7 +95,7 @@ def differentiate(camp):
                 # TODO: what happens in this case?
                 print('No sign change in autocorrelation detected...')
                 theta[i][j] = np.array([0] * depth)
-    theta = np.rollaxis(np.array(theta), 2)
+    theta = np.rollaxis(np.array(theta), 2, 0)
 
     # infer gradient
     t_theta = theta[1]
@@ -104,7 +106,10 @@ def differentiate(camp):
 def main(data):
     """ Detect phase singularities
     """
-    differentiate(data)
+    print(data.shape)
+    grad = differentiate(data)
+    print(grad.shape)
+    print(grad)
 
 
 if __name__ == '__main__':
@@ -113,4 +118,5 @@ if __name__ == '__main__':
         sys.exit(1)
 
     data, pacemaker = np.load(sys.argv[1])
+    data = np.rollaxis(data, 0, 3)
     main(data)
