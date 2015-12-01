@@ -6,6 +6,7 @@ import sys
 
 import numpy as np
 from scipy import ndimage
+from skimage.draw import circle_perimeter
 
 
 ## for fixed ij
@@ -114,13 +115,21 @@ def differentiate(camp):
 
     return grad
 
+def integrate(cx, cy, radius, grad):
+    """ Integrate gradient along circle perimeter of given shape
+    """
+    rr, cc = circle_perimeter(4, 4, 3)
+    res = sum(grad[rr, cc])
+    return res
+
 def main(data):
     """ Detect phase singularities
     """
     print(data.shape)
     grad = differentiate(data)
-    print(grad.shape)
     print(grad)
+    res = integrate(4, 4, 5, grad)
+    print(res)
 
 
 if __name__ == '__main__':
