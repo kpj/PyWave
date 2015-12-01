@@ -14,24 +14,37 @@ from scipy import ndimage
 #   where tau = first zero crossing of autocorrelation of x_ij(t)
 # extract: T_ij(t) = atan( x_ij(t+tau)-x_ij_mean, x_ij(t)-x_ij_mean )
 
-def compute_tau(cell_evo):
-    """ Compute tau as first zero crossing of autocorrelation
+def compute_tau(camp):
+    """ Compute tau as averaged first zero crossing of autocorrelation
     """
-    #acorr = np.correlate(cell_evo, cell_evo, mode='same')
-    acorr = np.correlate(cell_evo, cell_evo, mode='full')[len(cell_evo)-1:]
+    def get_tau(cell_evo):
+        """ Get tau for single run
+        """
+        acorr = np.correlate(cell_evo, cell_evo, mode='full')[len(cell_evo)-1:]
 
-    sign_changes = (np.diff(np.sign(acorr)) != 0)
-    if not any(sign_changes):
-        raise RuntimeError('No sign change detected')
+        sign_changes = (np.diff(np.sign(acorr)) != 0)
+        if not any(sign_changes):
+            raise RuntimeError('No sign change detected')
 
-    tau = sign_changes.nonzero()[0][0]
-    return tau
+        tau = sign_changes.nonzero()[0][0]
+        return tau
 
-def compute_phase_variable(cell_evo):
+    width, height, depth = camp.shape
+    tau_list = []
+    for j in range(width):
+        for i in range(height):
+            try:
+                tau_list.append(get_tau(camp[i, j]))
+            except RuntimeError:
+                # TODO: what happens in this case?
+                pass
+
+    assert len(tau_list) > 0, 'No sign changes found'
+    return int(np.mean(tau_list))
+
+def compute_phase_variable(cell_evo, tau):
     """ Generate local phase space
     """
-    tau = compute_tau(cell_evo)
-
     m = np.mean(cell_evo)
     theta = []
     for t in range(len(cell_evo) - tau):
@@ -85,16 +98,14 @@ def differentiate(camp):
     width, height, depth = camp.shape
 
     # compute thetas
+    tau = compute_tau(camp)
+    print('Tau:', tau)
+
     theta = np.empty((width, height)).tolist()
     for j in range(width):
         for i in range(height):
-            try:
-                cur = compute_phase_variable(camp[i, j])
-                theta[i][j] = np.array(cur)
-            except RuntimeError:
-                # TODO: what happens in this case?
-                print('No sign change in autocorrelation detected...')
-                theta[i][j] = np.array([0] * depth)
+            cur = compute_phase_variable(camp[i, j], tau)
+            theta[i][j] = np.array(cur)
     theta = np.rollaxis(np.array(theta), 2, 0)
 
     # infer gradient
