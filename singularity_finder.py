@@ -118,7 +118,10 @@ def differentiate(camp):
 def integrate(cx, cy, radius, grad):
     """ Integrate gradient along circle perimeter of given shape
     """
-    rr, cc = circle_perimeter(4, 4, 3)
+    rr, cc = circle_perimeter(
+        cx, cy, radius,
+        method='andres', shape=grad.shape
+    )
     res = sum(grad[rr, cc])
     return res
 
