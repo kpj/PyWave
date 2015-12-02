@@ -91,6 +91,25 @@ class LatticeState(object):
         """
         return self.width * self.height
 
+    def _state_vec2camp_exci(self, state):
+        """ Convert ODE state vector to cAMP and excitability matrices
+        """
+        flat_camp = state[:self.get_size()]
+        flat_exci = state[self.get_size():]
+
+        camp = np.reshape(flat_camp, (self.width, self.height))
+        exci = np.reshape(flat_exci, (self.width, self.height))
+
+        return camp, exci
+
+    def _camp_exci2state_vec(self, camp, exci):
+        """ Reverse of `_state_vec2camp_exci`
+        """
+        flat_camp = np.reshape(camp, self.get_size())
+        flat_exci = np.reshape(exci, self.get_size())
+
+        return np.append(flat_camp, flat_exci)
+
     def get_ode(self, state, t):
         """ Return corresponding ODE
             Structure:
@@ -101,11 +120,7 @@ class LatticeState(object):
             ]
         """
         # parse ODE state
-        flat_camp = state[:self.get_size()]
-        flat_exci = state[self.get_size():]
-
-        camp = np.reshape(flat_camp, (self.width, self.height))
-        exci = np.reshape(flat_exci, (self.width, self.height))
+        camp, exci = self._state_vec2camp_exci(state)
 
         # compute next iteration
         self._update_state_matrix(camp, exci)
@@ -127,10 +142,7 @@ class LatticeState(object):
                 if exci[i, j] < config.e_max:
                     next_exci[i, j] = config.eta + config.beta * camp[i, j]
 
-        flat_camp = np.reshape(next_camp, self.get_size())
-        flat_exci = np.reshape(next_exci, self.get_size())
-
-        return np.append(flat_camp, flat_exci)
+        return self._camp_exci2state_vec(next_camp, next_exci)
 
     def parse_result(self, orig_res):
         """ Parse integration result
