@@ -2,8 +2,10 @@
 Setup different initial conditions for the lattice
 """
 
+import numpy as np
 import numpy.random as npr
 
+from configuration import get_config
 from utils import LatticeState
 
 
@@ -43,5 +45,22 @@ class Default(BaseGenerator):
     def get_initial_state(self, system):
         return [0] * system.get_size() * 2
 
+class SingleSpiral(BaseGenerator):
+    def generate(self):
+        return LatticeState(self.width, self.height)
 
-Generator = Default
+    @classmethod
+    def get_initial_state(self, system):
+        w, h = system.width, system.height
+
+        camp = np.zeros((w, h))
+        exci = np.zeros((w, h))
+
+        for j in range(int(w/5)):
+            camp[int(h/2), j] = config.c_max
+
+        return system._camp_exci2state_vec(camp, exci)
+
+
+config = get_config()
+Generator = SingleSpiral
