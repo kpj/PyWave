@@ -37,7 +37,7 @@ def neural_spike():
 def lagged_phase_space():
     """ Plot phase space lagged by tau
     """
-    def do_plot(cell_evo):
+    def do_plot(cell_evo, i, j):
         x = []
         y = []
         for t in range(len(cell_evo) - tau):
@@ -46,7 +46,7 @@ def lagged_phase_space():
 
         plt.plot(x, y)
 
-        plt.title(r'Lagged phase space of neural spike ($\tau = %d$)' % tau)
+        plt.title(r'Lagged phase space of neural spike at $x_{%d%d}$ ($\tau = %d$)' % (i, j, tau))
         plt.xlabel(r'$x_{ij}(t - \tau)$')
         plt.ylabel(r'$x_{ij}(t)$')
 
