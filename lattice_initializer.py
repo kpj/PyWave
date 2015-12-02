@@ -22,6 +22,12 @@ class BaseGenerator(object):
         """
         raise NotImplementedError('No lattice is being generated')
 
+    @classmethod
+    def get_initial_state(self, system):
+        """ Return lattice object
+        """
+        raise NotImplementedError('No initial state is being generated')
+
 class Default(BaseGenerator):
     def generate(self):
         pacemakers = []
@@ -32,6 +38,10 @@ class Default(BaseGenerator):
             ))
 
         return LatticeState(self.width, self.height, pacemakers=pacemakers)
+
+    @classmethod
+    def get_initial_state(self, system):
+        return [0] * system.get_size() * 2
 
 
 Generator = Default

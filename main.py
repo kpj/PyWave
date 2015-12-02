@@ -16,7 +16,7 @@ def integrate_system(system):
         Levine et al. (1996)
     """
     t = 0
-    state = [0] * system.get_size() * 2
+    state = Generator.get_initial_state(system)
 
     pbar = ProgressBar(maxval=config.t_max)
     data = []
