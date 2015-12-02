@@ -93,14 +93,13 @@ def compute_discrete_gradient(field):
     grad = conv_x + conv_y
     return grad
 
-def differentiate(camp):
+def differentiate(camp, pos):
     """ Compute discretized nabla of local phase
     """
     width, height, depth = camp.shape
 
     # compute thetas
     tau = compute_tau(camp)
-    print('Tau:', tau)
 
     theta = np.empty((width, height)).tolist()
     for j in range(width):
@@ -110,7 +109,7 @@ def differentiate(camp):
     theta = np.rollaxis(np.array(theta), 2, 0)
 
     # infer gradient
-    t_theta = theta[1]
+    t_theta = theta[pos]
     grad = compute_discrete_gradient(t_theta)
 
     return grad
@@ -125,13 +124,13 @@ def integrate(cx, cy, radius, grad):
     res = sum(grad[rr, cc])
     return res
 
-def compute_singularity_measure(data):
+def compute_singularity_measure(data, pos=0):
     """ Compute singularity measure of data
     """
-    grad = differentiate(data)
+    grad = differentiate(data, pos=pos)
     width, height = grad.shape
 
-    circle_rad = 8
+    circle_rad = 2
     singularity = np.empty((width, height))
     for j in range(height):
         for i in range(width):
