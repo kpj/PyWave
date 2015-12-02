@@ -3,31 +3,13 @@ Reproduction of figure from Sawai et al. (2005)
 """
 
 import numpy as np
-import numpy.random as npr
 
 from progressbar import ProgressBar
 
 from configuration import get_config
-from utils import LatticeState, animate_evolution
+from lattice_initializer import Generator
+from utils import animate_evolution
 
-
-def generate_system(i, j=None):
-    """ Setup lattice of size `i`x`j`
-    """
-    if j is None:
-        j = i
-
-    pacemakers = []
-    for _ in range(i):
-        pacemakers.append((
-            npr.randint(0, i),
-            npr.randint(0, j)
-        ))
-
-    system = LatticeState(i, j, pacemakers=pacemakers)
-    print(system)
-
-    return system
 
 def integrate_system(system):
     """ Integrate ODE-CA hybrid with simple Euler method
@@ -65,7 +47,9 @@ def main():
     global config
     config = get_config()
 
-    system = generate_system(config.grid_size)
+    system = Generator(config.grid_size).generate()
+    print(system)
+
     cres = integrate_system(system)
     plot_system(cres, system.pacemakers)
 
