@@ -13,7 +13,7 @@ class Configuration(dict):
     __delattr__ = dict.__delitem__
 
 def setup_configuration(
-        gamma=8, r=300, D=2.3e-7,
+        gamma=8, r=300, D=2.3e-7 / 0.006**2,
         eta=0, beta=0.2,
         p=0.002,
         c_min=4, c_max=100,
