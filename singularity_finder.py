@@ -125,15 +125,29 @@ def integrate(cx, cy, radius, grad):
     res = sum(grad[rr, cc])
     return res
 
+def compute_singularity_measure(data):
+    """ Compute singularity measure of data
+    """
+    grad = differentiate(data)
+    width, height = grad.shape
+
+    circle_rad = 8
+    singularity = np.empty((width, height))
+    for j in range(height):
+        for i in range(width):
+            res = integrate(i, j, circle_rad, grad)
+            singularity[i, j] = res
+    singularity = np.array(singularity)
+
+    return singularity
+
+
 def main(data):
     """ Detect phase singularities
     """
     print(data.shape)
-    grad = differentiate(data)
-    print(grad)
-    res = integrate(4, 4, 5, grad)
-    print(res)
-
+    singularity = compute_singularity_measure(data)
+    print(singularity)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
