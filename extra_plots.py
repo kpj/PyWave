@@ -7,6 +7,7 @@ import numpy as np
 
 import matplotlib.pylab as plt
 import matplotlib.cm as cm
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from singularity_finder import compute_tau, compute_singularity_measure, compute_local_phase_field, compute_discrete_gradient, preprocess_data
 
@@ -70,26 +71,30 @@ def singularity_plot():
     camp = np.rollaxis(camp, 0, 3)
     camp = preprocess_data(camp)
 
-    pos = 0
     fig, axarr = plt.subplots(1, 4)
+    fig.tight_layout()
     plt.suptitle('pipeline overview')
 
+    def show(data, title, ax):
+        ax.set_title(title)
+        im = ax.imshow(
+            data, interpolation='nearest', cmap=cm.gray)
+        holder = make_axes_locatable(ax)
+        cax = holder.append_axes('right', size='20%', pad=0.05)
+        plt.colorbar(im, cax=cax, format='%.2f')
+
+
     rolled_camp = np.rollaxis(camp, 2, 0)
-    axarr[0].set_title('cell overview')
-    axarr[0].imshow(rolled_camp[pos], interpolation='nearest', cmap=cm.gray)
+    show(rolled_camp[pos], 'cell overview', axarr[0])
 
     lphase = compute_local_phase_field(camp)
-    axarr[1].set_title('local phase')
-    phase_im = axarr[1].imshow(lphase[pos], interpolation='nearest', cmap=cm.gray)
+    show(lphase[pos], 'local phase', axarr[1])
 
     grad = compute_discrete_gradient(lphase[pos])
-    axarr[2].set_title('gradient')
-    axarr[2].imshow(grad, interpolation='nearest', cmap=cm.gray)
+    show(grad, 'gradient', axarr[2])
 
     singularity = compute_singularity_measure(grad)
-    axarr[3].set_title('singularity measure')
-    axarr[3].imshow(
-        singularity, interpolation='nearest', cmap=cm.gray)
+    show(singularity, 'singularity measure', axarr[3])
 
     plt.savefig('images/singularity.png', bbox_inches='tight', dpi=300)
     plt.show()
