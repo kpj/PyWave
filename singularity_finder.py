@@ -60,7 +60,9 @@ def compute_phase_variable(cell_evo, tau):
 def compute_discrete_gradient(field):
     """ Compute discretized gradient on given field
     """
-    # convolution matrices
+    # fix phase jumps greater than PI
+    for i in range(field.shape[0]):
+        field[i] = np.unwrap(field[i])
 
     # finite difference operator
     fidi_op_x = np.diff(field, axis=0)
@@ -80,14 +82,6 @@ def compute_discrete_gradient(field):
         [-1/2, -1, -1/2]
     ])
 
-    # finite difference operator
-    # TODO: fix phase jumps greater than PI
-    fidi_op_x = np.diff(field, axis=0)
-    fidi_op_x = np.vstack((fidi_op_x, field[-1]))
-    fidi_op_y = np.diff(field, axis=1)
-    fidi_op_y = np.hstack((fidi_op_y, field[:,-1][np.newaxis].T))
-
-    # compute convolution
     conv_x = ndimage.convolve(
         fidi_op_x, nabla_x,
         mode='constant', cval=0.0
