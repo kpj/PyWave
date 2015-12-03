@@ -142,11 +142,36 @@ def compute_singularity_measure(data, pos=0):
 
     return singularity
 
+def preprocess_data(data):
+    """ Preprocess data to make singularity detection easier
+    """
+    # eliminate background
+    data = np.diff(data)
+
+    # average elements
+    data = np.array([0.5*(data[...,i]+data[...,i+1]) for i in range(0, data.shape[2]-1, 2)])
+    data = np.rollaxis(data, 0, 3)
+
+    # apply gaussian filter
+    def gf(field):
+        sig = 5
+        nrows, ncols = field.shape
+        return ndimage.gaussian_filter(
+            field,
+            sigma=(sig * nrows / 100.0, sig * ncols / 100.0),
+            order=0
+        )
+    data = np.array([gf(data[...,i]) for i in range(data.shape[2])])
+    data = np.rollaxis(data, 0, 3)
+
+    return data
+
 
 def main(data):
     """ Detect phase singularities
     """
     print(data.shape)
+    data = preprocess_data(data)
     singularity = compute_singularity_measure(data)
     print(singularity)
 
