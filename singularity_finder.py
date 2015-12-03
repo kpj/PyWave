@@ -61,6 +61,14 @@ def compute_discrete_gradient(field):
     """ Compute discretized gradient on given field
     """
     # convolution matrices
+
+    # finite difference operator
+    fidi_op_x = np.diff(field, axis=0)
+    fidi_op_x = np.vstack((fidi_op_x, fidi_op_x[-1]))
+    fidi_op_y = np.diff(field, axis=1)
+    fidi_op_y = np.hstack((fidi_op_y, fidi_op_y[:,-1][np.newaxis].T))
+
+    # compute convolution
     nabla_x = np.array([
         [-1/2, 0, 1/2],
         [-1, 0, 1],
