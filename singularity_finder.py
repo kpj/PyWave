@@ -51,43 +51,46 @@ def compute_phase_variable(cell_evo, tau):
 
     return theta
 
-def compute_discrete_gradient(field):
+def compute_discrete_gradient(fields):
     """ Compute discretized gradient on given field
     """
-    # fix phase jumps greater than PI
-    for i in range(field.shape[0]):
-        field[i] = np.unwrap(field[i])
+    gradients = []
+    for field in fields:
+        # fix phase jumps greater than PI
+        for i in range(field.shape[0]):
+            field[i] = np.unwrap(field[i])
 
-    # finite difference operator
-    fidi_op_x = np.diff(field, axis=0)
-    fidi_op_x = np.vstack((fidi_op_x, fidi_op_x[-1]))
-    fidi_op_y = np.diff(field, axis=1)
-    fidi_op_y = np.hstack((fidi_op_y, fidi_op_y[:,-1][np.newaxis].T))
+        # finite difference operator
+        fidi_op_x = np.diff(field, axis=0)
+        fidi_op_x = np.vstack((fidi_op_x, fidi_op_x[-1]))
+        fidi_op_y = np.diff(field, axis=1)
+        fidi_op_y = np.hstack((fidi_op_y, fidi_op_y[:,-1][np.newaxis].T))
 
-    # compute convolution
-    nabla_x = np.array([
-        [-1/2, 0, 1/2],
-        [-1, 0, 1],
-        [-1/2, 0, 1/2]
-    ])
-    nabla_y = np.array([
-        [1/2, 1, 1/2],
-        [0, 0, 0],
-        [-1/2, -1, -1/2]
-    ])
+        # compute convolution
+        nabla_x = np.array([
+            [-1/2, 0, 1/2],
+            [-1, 0, 1],
+            [-1/2, 0, 1/2]
+        ])
+        nabla_y = np.array([
+            [1/2, 1, 1/2],
+            [0, 0, 0],
+            [-1/2, -1, -1/2]
+        ])
 
-    conv_x = ndimage.convolve(
-        fidi_op_y, nabla_x,
-        mode='constant', cval=0.0
-    )
-    conv_y = ndimage.convolve(
-        fidi_op_x, nabla_y,
-        mode='constant', cval=0.0
-    )
+        conv_x = ndimage.convolve(
+            fidi_op_y, nabla_x,
+            mode='constant', cval=0.0
+        )
+        conv_y = ndimage.convolve(
+            fidi_op_x, nabla_y,
+            mode='constant', cval=0.0
+        )
 
-    # compute discretized gradient
-    grad = conv_x + conv_y
-    return grad
+        # compute discretized gradient
+        grad = conv_x + conv_y
+        gradients.append(grad)
+    return np.array(gradients)
 
 def compute_local_phase_field(camp):
     """ Compute local phase of each cell
@@ -116,20 +119,24 @@ def integrate(cx, cy, radius, grad):
     res = sum(grad[rr, cc])
     return res
 
-def compute_singularity_measure(grad):
+def compute_singularity_measure(gradients):
     """ Compute singularity measure of data
     """
-    width, height = grad.shape
+    singularities = []
+    for grad in gradients:
+        width, height = grad.shape
 
-    circle_rad = 3
-    singularity = np.empty((width, height))
-    for j in range(height):
-        for i in range(width):
-            res = integrate(i, j, circle_rad, grad)
-            singularity[i, j] = res
-    singularity = np.array(singularity)
+        circle_rad = 3
+        singularity = np.empty((width, height))
+        for j in range(height):
+            for i in range(width):
+                res = integrate(i, j, circle_rad, grad)
+                singularity[i, j] = res
+        singularity = np.array(singularity)
 
-    return singularity
+        singularities.append(singularity)
+
+    return np.array(singularities)
 
 def preprocess_data(data):
     """ Preprocess data to make singularity detection easier
@@ -159,15 +166,13 @@ def preprocess_data(data):
 def main(data):
     """ Detect phase singularities
     """
-    pos = 0
-
     print(data.shape)
     data = preprocess_data(data)
 
     lphase = compute_local_phase_field(data)
-    grad = compute_discrete_gradient(lphase[pos])
+    gradients = compute_discrete_gradient(lphase)
 
-    singularity = compute_singularity_measure(grad)
+    singularity = compute_singularity_measure(gradients)
     print(singularity)
 
 if __name__ == '__main__':

@@ -67,11 +67,21 @@ def lagged_phase_space():
 def singularity_plot():
     """ Plot overview over singularity measure
     """
+    # preprocess input
     camp, pacemaker = np.load(sys.argv[1])
     camp = np.rollaxis(camp, 0, 3)
     camp = preprocess_data(camp)
+    print(camp.shape)
 
-    fig, axarr = plt.subplots(1, 4)
+    # compute data
+    rolled_camp = np.rollaxis(camp, 2, 0)
+    lphase = compute_local_phase_field(camp)
+    grads = compute_discrete_gradient(lphase)
+    singularities = compute_singularity_measure(grads)
+
+    # plot data
+    pos_range = [0, 200, 400, 550]
+    fig, axarr = plt.subplots(len(pos_range), 4)
     fig.tight_layout()
     plt.suptitle('pipeline overview')
 
@@ -83,18 +93,11 @@ def singularity_plot():
         cax = holder.append_axes('right', size='20%', pad=0.05)
         plt.colorbar(im, cax=cax, format='%.2f')
 
-
-    rolled_camp = np.rollaxis(camp, 2, 0)
-    show(rolled_camp[pos], 'cell overview', axarr[0])
-
-    lphase = compute_local_phase_field(camp)
-    show(lphase[pos], 'local phase', axarr[1])
-
-    grad = compute_discrete_gradient(lphase[pos])
-    show(grad, 'gradient', axarr[2])
-
-    singularity = compute_singularity_measure(grad)
-    show(singularity, 'singularity measure', axarr[3])
+    for axrow, pos in enumerate(pos_range):
+        show(rolled_camp[pos], 'cell overview', axarr[axrow][0])
+        show(lphase[pos], 'local phase', axarr[axrow][1])
+        show(grads[pos], 'gradient', axarr[axrow][2])
+        show(singularities[pos], 'singularity measure', axarr[axrow][3])
 
     plt.savefig('images/singularity.png', bbox_inches='tight', dpi=300)
     plt.show()
