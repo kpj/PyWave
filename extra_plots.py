@@ -19,13 +19,6 @@ def neural_spike():
         """
         plt.plot(range(len(cell_evo)), cell_evo)
 
-        plt.title('cAMP concentration in single cell')
-        plt.xlabel('t')
-        plt.ylabel('cAMP concentration')
-
-        #plt.savefig('images/neural_spike.png', bbox_inches='tight', dpi=300)
-        plt.show()
-
     camp, pacemaker = np.load(sys.argv[1])
     camp = np.rollaxis(camp, 0, 3)
 
@@ -33,6 +26,13 @@ def neural_spike():
     for j in range(width):
         for i in range(height):
             do_plot(camp[i, j])
+
+    plt.title('cAMP concentration in single cell')
+    plt.xlabel('t')
+    plt.ylabel('cAMP concentration')
+
+    plt.savefig('images/neural_spike.png', bbox_inches='tight', dpi=300)
+    plt.show()
 
 def lagged_phase_space():
     """ Plot phase space lagged by tau
