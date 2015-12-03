@@ -9,12 +9,6 @@ from scipy import ndimage
 from skimage.draw import circle_perimeter
 
 
-## for fixed ij
-# input: x_ij(t)
-# create phase space: x_ij(t+tau) vs x_ij(t)
-#   where tau = first zero crossing of autocorrelation of x_ij(t)
-# extract: T_ij(t) = atan( x_ij(t+tau)-x_ij_mean, x_ij(t)-x_ij_mean )
-
 def compute_tau(camp):
     """ Compute tau as averaged first zero crossing of autocorrelation
     """
