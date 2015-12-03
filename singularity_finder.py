@@ -83,11 +83,11 @@ def compute_discrete_gradient(field):
     ])
 
     conv_x = ndimage.convolve(
-        fidi_op_x, nabla_x,
+        fidi_op_y, nabla_x,
         mode='constant', cval=0.0
     )
     conv_y = ndimage.convolve(
-        fidi_op_y, nabla_y,
+        fidi_op_x, nabla_y,
         mode='constant', cval=0.0
     )
 
