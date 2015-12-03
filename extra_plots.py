@@ -37,21 +37,14 @@ def neural_spike():
 def lagged_phase_space():
     """ Plot phase space lagged by tau
     """
-    def do_plot(cell_evo, i, j):
+    def do_plot(cell_evo):
         x = []
         y = []
         for t in range(len(cell_evo) - tau):
             x.append(cell_evo[t + tau])
             y.append(cell_evo[t])
 
-        plt.plot(x, y)
-
-        plt.title(r'Lagged phase space of neural spike at $x_{%d%d}$ ($\tau = %d$)' % (i, j, tau))
-        plt.xlabel(r'$x_{ij}(t - \tau)$')
-        plt.ylabel(r'$x_{ij}(t)$')
-
-        #plt.savefig('images/lagged_phase_space.png', bbox_inches='tight', dpi=300)
-        plt.show()
+        plt.plot(x, y, 'o')
 
     camp, pacemaker = np.load(sys.argv[1])
     camp = np.rollaxis(camp, 0, 3)
@@ -61,7 +54,14 @@ def lagged_phase_space():
     width, height, depth = camp.shape
     for j in range(width):
         for i in range(height):
-            do_plot(camp[i, j], i, j)
+            do_plot(camp[i, j])
+
+    plt.title(r'Lagged phase space of neural spike ($\tau = %d$)' % tau)
+    plt.xlabel(r'$x_{ij}(t - \tau)$')
+    plt.ylabel(r'$x_{ij}(t)$')
+
+    plt.savefig('images/lagged_phase_space.png', bbox_inches='tight', dpi=300)
+    #plt.show()
 
 def singularity_plot():
     """ Plot overview over singularity measure
