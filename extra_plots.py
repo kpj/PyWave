@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pylab as plt
 import matplotlib.cm as cm
 
-from singularity_finder import compute_tau, differentiate, compute_singularity_measure
+from singularity_finder import compute_tau, compute_singularity_measure, compute_local_phase_field, compute_discrete_gradient, preprocess_data
 
 
 def neural_spike():
@@ -68,21 +68,28 @@ def singularity_plot():
     """
     camp, pacemaker = np.load(sys.argv[1])
     camp = np.rollaxis(camp, 0, 3)
+    camp = preprocess_data(camp)
 
-    pos = 1090
-    fig, axarr = plt.subplots(1, 3)
+    pos = 0
+    fig, axarr = plt.subplots(1, 4)
+    plt.suptitle('pipeline overview')
 
     rolled_camp = np.rollaxis(camp, 2, 0)
     axarr[0].set_title('cell overview')
     axarr[0].imshow(rolled_camp[pos], interpolation='nearest', cmap=cm.gray)
 
-    grad = differentiate(camp, pos=pos)
-    axarr[1].set_title('gradient')
-    axarr[1].imshow(grad, interpolation='nearest', cmap=cm.gray)
+    lphase = compute_local_phase_field(camp)
+    axarr[1].set_title('local phase')
+    phase_im = axarr[1].imshow(lphase[pos], interpolation='nearest', cmap=cm.gray)
 
-    singularity = compute_singularity_measure(camp, pos)
-    axarr[2].set_title('singularity measure')
-    axarr[2].imshow(singularity, interpolation='nearest', cmap=cm.gray)
+    grad = compute_discrete_gradient(lphase[pos])
+    axarr[2].set_title('gradient')
+    axarr[2].imshow(grad, interpolation='nearest', cmap=cm.gray)
+
+    singularity = compute_singularity_measure(grad)
+    axarr[3].set_title('singularity measure')
+    axarr[3].imshow(
+        singularity, interpolation='nearest', cmap=cm.gray)
 
     plt.savefig('images/singularity.png', bbox_inches='tight', dpi=300)
     plt.show()

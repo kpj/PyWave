@@ -95,8 +95,8 @@ def compute_discrete_gradient(field):
     grad = conv_x + conv_y
     return grad
 
-def differentiate(camp, pos):
-    """ Compute discretized nabla of local phase
+def compute_local_phase_field(camp):
+    """ Compute local phase of each cell
     """
     width, height, depth = camp.shape
 
@@ -110,11 +110,7 @@ def differentiate(camp, pos):
             theta[i][j] = np.array(cur)
     theta = np.rollaxis(np.array(theta), 2, 0)
 
-    # infer gradient
-    t_theta = theta[pos]
-    grad = compute_discrete_gradient(t_theta)
-
-    return grad
+    return theta
 
 def integrate(cx, cy, radius, grad):
     """ Integrate gradient along circle perimeter of given shape
@@ -126,13 +122,12 @@ def integrate(cx, cy, radius, grad):
     res = sum(grad[rr, cc])
     return res
 
-def compute_singularity_measure(data, pos=0):
+def compute_singularity_measure(grad):
     """ Compute singularity measure of data
     """
-    grad = differentiate(data, pos=pos)
     width, height = grad.shape
 
-    circle_rad = 2
+    circle_rad = 3
     singularity = np.empty((width, height))
     for j in range(height):
         for i in range(width):
@@ -170,9 +165,15 @@ def preprocess_data(data):
 def main(data):
     """ Detect phase singularities
     """
+    pos = 0
+
     print(data.shape)
     data = preprocess_data(data)
-    singularity = compute_singularity_measure(data)
+
+    lphase = compute_local_phase_field(data)
+    grad = compute_discrete_gradient(lphase[pos])
+
+    singularity = compute_singularity_measure(grad)
     print(singularity)
 
 if __name__ == '__main__':
