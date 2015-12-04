@@ -102,6 +102,12 @@ def singularity_plot():
     plt.savefig('images/singularity.png', bbox_inches='tight', dpi=300)
     plt.show()
 
+    plt.figure()
+    avg_singularity = np.mean(singularities, axis=0)
+    show(avg_singularity, 'averaged singularity measure', plt.gca())
+    plt.savefig('images/averaged_singularity.png', bbox_inches='tight', dpi=300)
+    plt.show()
+
 
 if __name__ == '__main__':
     #neural_spike()
