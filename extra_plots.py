@@ -80,7 +80,8 @@ def singularity_plot():
     singularities = compute_singularity_measure(grads)
 
     # plot data
-    pos_range = [0, 200, 400, 550]
+    pos_num = 4
+    pos_range = range(0, camp.shape[2], int(camp.shape[2]/(pos_num)))[1:]
     fig, axarr = plt.subplots(len(pos_range), 4)
     fig.tight_layout()
     plt.suptitle('pipeline overview')
