@@ -8,6 +8,8 @@ import numpy as np
 from scipy import ndimage
 from skimage.draw import circle_perimeter
 
+from utils import timed_run
+
 
 def compute_tau(camp):
     """ Compute tau as averaged first zero crossing of autocorrelation
@@ -51,6 +53,7 @@ def compute_phase_variable(cell_evo, tau):
 
     return theta
 
+@timed_run('Computing gradients')
 def compute_discrete_gradient(fields):
     """ Compute discretized gradient on given field
     """
@@ -90,8 +93,10 @@ def compute_discrete_gradient(fields):
         # compute discretized gradient
         grad = conv_x + conv_y
         gradients.append(grad)
+
     return np.array(gradients)
 
+@timed_run('Computing local phase field')
 def compute_local_phase_field(camp):
     """ Compute local phase of each cell
     """
@@ -119,6 +124,7 @@ def integrate(cx, cy, radius, grad):
     res = sum(grad[rr, cc])
     return res
 
+@timed_run('Computing singularity measure')
 def compute_singularity_measure(gradients):
     """ Compute singularity measure of data
     """
@@ -138,6 +144,7 @@ def compute_singularity_measure(gradients):
 
     return np.array(singularities)
 
+@timed_run('Preprocessing data')
 def preprocess_data(data):
     """ Preprocess data to make singularity detection easier
     """

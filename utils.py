@@ -63,6 +63,20 @@ def gen_run_identifier():
         config.D, config.p,
         time.strftime('%Y%m%d%H%M%S'))).replace('.', 'p')
 
+def timed_run(title):
+    """ Decorator which times the decorated function
+    """
+    def tmp(func):
+        def wrapper(*args, **kwargs):
+            print(' > %s' % title, end=' ', flush=True)
+            start_time = time.time()
+            res = func(*args, **kwargs)
+            run_dur = time.time() - start_time
+            print('(%.2fs)' % run_dur)
+            return res
+        return wrapper
+    return tmp
+
 
 # plot data from previous run
 if __name__ == '__main__':
