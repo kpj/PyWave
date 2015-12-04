@@ -6,7 +6,7 @@ import numpy as np
 import numpy.random as npr
 
 from configuration import get_config
-from utils import LatticeState
+from model import LatticeState
 
 
 class BaseGenerator(object):
