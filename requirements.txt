@@ -1,0 +1,5 @@
+numpy
+matplotlib==1.4.0
+scipy
+scikit-image
+progressbar2
