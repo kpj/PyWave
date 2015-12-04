@@ -75,13 +75,13 @@ def singularity_plot():
 
     # compute data
     rolled_camp = np.rollaxis(camp, 2, 0)
-    lphase = compute_local_phase_field(camp)
+    lphase = compute_local_phase_field(camp) # decreases last dim due to tau
     grads = compute_discrete_gradient(lphase)
     singularities = compute_singularity_measure(grads)
 
     # plot data
     pos_num = 4
-    pos_range = range(0, camp.shape[2], int(camp.shape[2]/(pos_num)))[1:]
+    pos_range = range(0, lphase.shape[2], int(lphase.shape[2]/(pos_num)))[1:]
     fig, axarr = plt.subplots(len(pos_range), 4)
     fig.tight_layout()
     plt.suptitle('pipeline overview')
