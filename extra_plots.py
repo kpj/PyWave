@@ -1,7 +1,7 @@
 """
 Generate nice plots providing additional information
 """
-import sys
+import sys, os
 
 import numpy as np
 
@@ -100,16 +100,20 @@ def singularity_plot():
         show(singularities[pos], 'singularity measure', axarr[axrow][3])
 
     plt.savefig('images/singularity.png', bbox_inches='tight', dpi=300)
-    plt.show()
+    #plt.show()
 
     plt.figure()
     avg_singularity = np.mean(singularities, axis=0)
     show(avg_singularity, 'averaged singularity measure', plt.gca())
     plt.savefig('images/averaged_singularity.png', bbox_inches='tight', dpi=300)
-    plt.show()
+    #plt.show()
 
 
 if __name__ == '__main__':
+    dname = 'images'
+    if not os.path.isdir(dname):
+        os.mkdir(dname)
+
     #neural_spike()
     #lagged_phase_space()
     singularity_plot()
