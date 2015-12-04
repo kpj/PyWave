@@ -8,7 +8,7 @@ from progressbar import ProgressBar
 
 from configuration import get_config
 from lattice_initializer import Generator
-from utils import animate_evolution
+from utils import animate_evolution, save_data, gen_run_identifier
 
 
 def integrate_system(system):
@@ -36,7 +36,9 @@ def plot_system(system, pacemakers):
     """
     # roll axes to make time-access easier
     rolled_system = np.rollaxis(system, 2)
-    np.save('save', np.array([rolled_system, pacemakers]))
+
+    fname = gen_run_identifier()
+    save_data('data/%s' % fname, np.array([rolled_system, pacemakers]))
 
     # create animation
     animate_evolution(rolled_system, pacemakers)

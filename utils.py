@@ -2,6 +2,8 @@
 General utilities module
 """
 
+import os, time
+
 import numpy as np
 import numpy.random as npr
 
@@ -193,6 +195,23 @@ def animate_evolution(states, pacemakers, fname='lattice.gif'):
 
     ani.save(fname, writer='imagemagick', fps=10)#, dpi=200)
     plt.close()
+
+def save_data(fname, data):
+    """ Try to save `data` in `directory`. Create `directory` if it does not exist
+    """
+    dname = os.path.dirname(os.path.abspath(fname))
+    if not os.path.isdir(dname):
+        os.mkdir(dname)
+    np.save(fname, data)
+
+def gen_run_identifier():
+    """ Extract config parameters which are likely to be distinctive.
+        Note: this requires a properly setup configuration
+    """
+    return ('data_%d_%d_%.2f_%.3f_%s' % ( \
+        config.grid_size, config.t_max,
+        config.D, config.p,
+        time.strftime('%Y%m%d%H%M%S'))).replace('.', 'p')
 
 
 # plot data from previous run
