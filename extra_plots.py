@@ -81,7 +81,7 @@ def singularity_plot():
 
     # plot data
     pos_num = 4
-    pos_range = range(0, lphase.shape[2], int(lphase.shape[2]/(pos_num)))[1:]
+    pos_range = range(0, lphase.shape[0], int(lphase.shape[0]/(pos_num)))[1:]
     fig, axarr = plt.subplots(len(pos_range), 4)
     fig.tight_layout()
     plt.suptitle('pipeline overview')
