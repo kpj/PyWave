@@ -68,15 +68,15 @@ def lagged_phase_space():
 def singularity_plot():
     """ Plot overview over singularity measure
     """
-    # preprocess input
-    camp, pacemaker = np.load(sys.argv[1])
-    camp = np.rollaxis(camp, 0, 3)
-    camp = preprocess_data(camp)
-    print(camp.shape)
-
-    # compute data
     cache_dir = 'cache'
     if not os.path.isdir(cache_dir):
+        # preprocess input
+        camp, pacemaker = np.load(sys.argv[1])
+        camp = np.rollaxis(camp, 0, 3)
+        camp = preprocess_data(camp)
+        print(camp.shape)
+
+        # compute data
         rolled_camp = np.rollaxis(camp, 2, 0)
         lphase = compute_local_phase_field(camp) # decreases last dim due to tau
         grads = compute_discrete_gradient(lphase)
