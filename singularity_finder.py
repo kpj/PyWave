@@ -174,14 +174,17 @@ def preprocess_data(data):
 
     return data
 
-def singularity_plot(camp):
+def singularity_plot(fname):
     """ Plot overview over singularity measure
     """
     cache_dir = 'cache'
+    pure_fname = os.path.splitext(os.path.basename(fname))[0]
+
     if not os.path.isdir(cache_dir):
         # preprocess input
+        camp, pacemaker = np.load(sys.argv[1])
+        camp = np.rollaxis(camp, 0, 3)
         camp = preprocess_data(camp)
-        print(camp.shape)
 
         # compute data
         rolled_camp = np.rollaxis(camp, 2, 0)
@@ -190,16 +193,17 @@ def singularity_plot(camp):
         singularities = compute_singularity_measure(grads)
 
         # cache data
-        save_data('%s/rolled_camp' % cache_dir, rolled_camp)
-        save_data('%s/lphase' % cache_dir, lphase)
-        save_data('%s/grads' % cache_dir, grads)
-        save_data('%s/singularities' % cache_dir, singularities)
+        os.path.join(cache_dir, pure_fname, '')
+        save_data(os.path.join(cache_dir, pure_fname, 'rolled_camp'), rolled_camp)
+        save_data(os.path.join(cache_dir, pure_fname, 'lphase'), lphase)
+        save_data(os.path.join(cache_dir, pure_fname, 'grads'), grads)
+        save_data(os.path.join(cache_dir, pure_fname, 'singularities'), singularities)
     else:
         print('Using cached data')
-        rolled_camp = np.load('%s/rolled_camp.npy' % cache_dir)
-        lphase = np.load('%s/lphase.npy' % cache_dir)
-        grads = np.load('%s/grads.npy' % cache_dir)
-        singularities = np.load('%s/singularities.npy' % cache_dir)
+        rolled_camp = np.load(os.path.join(cache_dir, pure_fname, 'rolled_camp.npy'))
+        lphase = np.load(os.path.join(cache_dir, pure_fname, 'lphase.npy'))
+        grads = np.load(os.path.join(cache_dir, pure_fname, 'grads.npy'))
+        singularities = np.load(os.path.join(cache_dir, pure_fname, 'singularities.npy'))
 
     # plot data
     pos_num = 4
@@ -257,9 +261,7 @@ def main():
     if not os.path.isdir(dname):
         os.mkdir(dname)
 
-    data, pacemaker = np.load(sys.argv[1])
-    data = np.rollaxis(data, 0, 3)
-    singularity_plot(data)
+    singularity_plot(sys.argv[1])
 
 if __name__ == '__main__':
     main()
