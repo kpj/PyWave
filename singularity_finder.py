@@ -7,6 +7,7 @@ import sys
 import numpy as np
 from scipy import ndimage
 from skimage.draw import circle_perimeter
+from skimage.restoration import unwrap_phase
 
 from utils import timed_run
 
@@ -60,8 +61,7 @@ def compute_discrete_gradient(fields):
     gradients = []
     for field in fields:
         # fix phase jumps greater than PI
-        for i in range(field.shape[0]):
-            field[i] = np.unwrap(field[i])
+        field = unwrap_phase(field)
 
         # finite difference operator
         fidi_op_x = np.diff(field, axis=0)
