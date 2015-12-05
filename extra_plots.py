@@ -10,6 +10,7 @@ import matplotlib.cm as cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from singularity_finder import compute_tau, compute_singularity_measure, compute_local_phase_field, compute_discrete_gradient, preprocess_data
+from utils import save_data
 
 
 def neural_spike():
@@ -74,10 +75,24 @@ def singularity_plot():
     print(camp.shape)
 
     # compute data
-    rolled_camp = np.rollaxis(camp, 2, 0)
-    lphase = compute_local_phase_field(camp) # decreases last dim due to tau
-    grads = compute_discrete_gradient(lphase)
-    singularities = compute_singularity_measure(grads)
+    cache_dir = 'cache'
+    if not os.path.isdir(cache_dir):
+        rolled_camp = np.rollaxis(camp, 2, 0)
+        lphase = compute_local_phase_field(camp) # decreases last dim due to tau
+        grads = compute_discrete_gradient(lphase)
+        singularities = compute_singularity_measure(grads)
+
+        # cache data
+        save_data('%s/rolled_camp' % cache_dir, rolled_camp)
+        save_data('%s/lphase' % cache_dir, lphase)
+        save_data('%s/grads' % cache_dir, grads)
+        save_data('%s/singularities' % cache_dir, singularities)
+    else:
+        print('Using cached data')
+        rolled_camp = np.load('%s/rolled_camp.npy' % cache_dir)
+        lphase = np.load('%s/lphase.npy' % cache_dir)
+        grads = np.load('%s/grads.npy' % cache_dir)
+        singularities = np.load('%s/singularities.npy' % cache_dir)
 
     # plot data
     pos_num = 4
