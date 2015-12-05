@@ -2,14 +2,19 @@
 Find phase singularities, i.e. spiral tips
 """
 
-import sys
+import sys, os
 
 import numpy as np
+
 from scipy import ndimage
 from skimage.draw import circle_perimeter
 from skimage.restoration import unwrap_phase
 
-from utils import timed_run
+import matplotlib.pylab as plt
+import matplotlib.cm as cm
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+from utils import timed_run, save_data
 
 
 def compute_tau(camp):
@@ -169,24 +174,92 @@ def preprocess_data(data):
 
     return data
 
+def singularity_plot(camp):
+    """ Plot overview over singularity measure
+    """
+    cache_dir = 'cache'
+    if not os.path.isdir(cache_dir):
+        # preprocess input
+        camp = preprocess_data(camp)
+        print(camp.shape)
 
-def main(data):
+        # compute data
+        rolled_camp = np.rollaxis(camp, 2, 0)
+        lphase = compute_local_phase_field(camp) # decreases last dim due to tau
+        grads = compute_discrete_gradient(lphase)
+        singularities = compute_singularity_measure(grads)
+
+        # cache data
+        save_data('%s/rolled_camp' % cache_dir, rolled_camp)
+        save_data('%s/lphase' % cache_dir, lphase)
+        save_data('%s/grads' % cache_dir, grads)
+        save_data('%s/singularities' % cache_dir, singularities)
+    else:
+        print('Using cached data')
+        rolled_camp = np.load('%s/rolled_camp.npy' % cache_dir)
+        lphase = np.load('%s/lphase.npy' % cache_dir)
+        grads = np.load('%s/grads.npy' % cache_dir)
+        singularities = np.load('%s/singularities.npy' % cache_dir)
+
+    # plot data
+    pos_num = 4
+    pos_range = range(0, lphase.shape[0], int(lphase.shape[0]/(pos_num)))[1:]
+
+    fig, axarr = plt.subplots(len(pos_range), 4, figsize=(10, 10))
+    fig.tight_layout()
+    plt.suptitle('pipeline overview')
+
+    def show(data, title, ax):
+        ax.set_title(title)
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+
+        im = ax.imshow(
+            data, interpolation='nearest', cmap=cm.gray)
+
+        holder = make_axes_locatable(ax)
+        cax = holder.append_axes('right', size='20%', pad=0.05)
+        plt.colorbar(im, cax=cax, format='%.2f')
+
+    for axrow, pos in enumerate(pos_range):
+        show(rolled_camp[pos], 'cell overview', axarr[axrow][0])
+        show(lphase[pos], 'local phase', axarr[axrow][1])
+        show(grads[pos], 'gradient', axarr[axrow][2])
+        show(singularities[pos], 'singularity measure', axarr[axrow][3])
+
+    plt.savefig('images/singularity.png', bbox_inches='tight', dpi=300)
+    #plt.show()
+
+    # averaged results
+    fig, axarr = plt.subplots(1, 2, figsize=(10, 10))
+    avg_singularity = np.mean(singularities, axis=0)
+
+    thres_singularity = avg_singularity.copy()
+    thres_singularity[thres_singularity > np.pi] = 2 * np.pi
+    thres_singularity[thres_singularity < -np.pi] = -2 * np.pi
+    thres_singularity[(thres_singularity > -np.pi) & (thres_singularity < np.pi)] = 0
+
+    show(avg_singularity, 'averaged singularity measure', axarr[0])
+    show(thres_singularity, 'thresholded singularity measure', axarr[1])
+
+    plt.savefig('images/averaged_singularity.png', bbox_inches='tight', dpi=300)
+    #plt.show()
+
+
+def main():
     """ Detect phase singularities
     """
-    print(data.shape)
-    data = preprocess_data(data)
-
-    lphase = compute_local_phase_field(data)
-    gradients = compute_discrete_gradient(lphase)
-
-    singularity = compute_singularity_measure(gradients)
-    print(singularity)
-
-if __name__ == '__main__':
     if len(sys.argv) != 2:
         print('Usage: %s <data file>' % sys.argv[0])
         sys.exit(1)
 
+    dname = 'images'
+    if not os.path.isdir(dname):
+        os.mkdir(dname)
+
     data, pacemaker = np.load(sys.argv[1])
     data = np.rollaxis(data, 0, 3)
-    main(data)
+    singularity_plot(data)
+
+if __name__ == '__main__':
+    main()
