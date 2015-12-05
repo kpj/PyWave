@@ -51,7 +51,7 @@ def save_data(fname, data):
     """
     dname = os.path.dirname(os.path.abspath(fname))
     if not os.path.isdir(dname):
-        os.mkdir(dname)
+        os.makedirs(dname)
     np.save(fname, data)
 
 def gen_run_identifier():
