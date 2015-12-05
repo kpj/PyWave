@@ -205,6 +205,11 @@ def singularity_plot(fname):
         grads = np.load(os.path.join(cache_dir, pure_fname, 'grads.npy'))
         singularities = np.load(os.path.join(cache_dir, pure_fname, 'singularities.npy'))
 
+    # handle img directory
+    img_dir = 'images'
+    if not os.path.isdir(os.path.join(img_dir, pure_fname)):
+        os.makedirs(os.path.join(img_dir, pure_fname))
+
     # plot data
     pos_num = 4
     pos_range = range(0, lphase.shape[0], int(lphase.shape[0]/(pos_num)))[1:]
@@ -231,7 +236,7 @@ def singularity_plot(fname):
         show(grads[pos], 'gradient', axarr[axrow][2])
         show(singularities[pos], 'singularity measure', axarr[axrow][3])
 
-    plt.savefig('images/singularity.png', bbox_inches='tight', dpi=300)
+    plt.savefig(os.path.join(img_dir, pure_fname, 'singularity.png'), bbox_inches='tight', dpi=300)
     #plt.show()
 
     # averaged results
@@ -246,7 +251,7 @@ def singularity_plot(fname):
     show(avg_singularity, 'averaged singularity measure', axarr[0])
     show(thres_singularity, 'thresholded singularity measure', axarr[1])
 
-    plt.savefig('images/averaged_singularity.png', bbox_inches='tight', dpi=300)
+    plt.savefig(os.path.join(img_dir, pure_fname, 'averaged_singularity.png'), bbox_inches='tight', dpi=300)
     #plt.show()
 
 
@@ -256,10 +261,6 @@ def main():
     if len(sys.argv) != 2:
         print('Usage: %s <data file>' % sys.argv[0])
         sys.exit(1)
-
-    dname = 'images'
-    if not os.path.isdir(dname):
-        os.mkdir(dname)
 
     singularity_plot(sys.argv[1])
 
