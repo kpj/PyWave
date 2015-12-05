@@ -97,14 +97,19 @@ def singularity_plot():
     # plot data
     pos_num = 4
     pos_range = range(0, lphase.shape[0], int(lphase.shape[0]/(pos_num)))[1:]
-    fig, axarr = plt.subplots(len(pos_range), 4)
+
+    fig, axarr = plt.subplots(len(pos_range), 4, figsize=(10, 10))
     fig.tight_layout()
     plt.suptitle('pipeline overview')
 
     def show(data, title, ax):
         ax.set_title(title)
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+
         im = ax.imshow(
             data, interpolation='nearest', cmap=cm.gray)
+
         holder = make_axes_locatable(ax)
         cax = holder.append_axes('right', size='20%', pad=0.05)
         plt.colorbar(im, cax=cax, format='%.2f')
