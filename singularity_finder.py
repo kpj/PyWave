@@ -137,7 +137,7 @@ def compute_singularity_measure(gradients):
     for grad in gradients:
         width, height = grad.shape
 
-        circle_rad = 3
+        circle_rad = 5
         singularity = np.empty((width, height))
         for j in range(height):
             for i in range(width):
