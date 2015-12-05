@@ -180,7 +180,7 @@ def singularity_plot(fname):
     cache_dir = 'cache'
     pure_fname = os.path.splitext(os.path.basename(fname))[0]
 
-    if not os.path.isdir(cache_dir):
+    if not os.path.isdir(os.path.join(cache_dir, pure_fname)):
         # preprocess input
         camp, pacemaker = np.load(sys.argv[1])
         camp = np.rollaxis(camp, 0, 3)
