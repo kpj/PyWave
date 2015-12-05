@@ -123,9 +123,18 @@ def singularity_plot():
     plt.savefig('images/singularity.png', bbox_inches='tight', dpi=300)
     #plt.show()
 
-    plt.figure()
+    # averaged results
+    fig, axarr = plt.subplots(1, 2, figsize=(10, 10))
     avg_singularity = np.mean(singularities, axis=0)
-    show(avg_singularity, 'averaged singularity measure', plt.gca())
+
+    thres_singularity = avg_singularity.copy()
+    thres_singularity[thres_singularity > np.pi] = 2 * np.pi
+    thres_singularity[thres_singularity < -np.pi] = -2 * np.pi
+    thres_singularity[(thres_singularity > -np.pi) & (thres_singularity < np.pi)] = 0
+
+    show(avg_singularity, 'averaged singularity measure', axarr[0])
+    show(thres_singularity, 'thresholded singularity measure', axarr[1])
+
     plt.savefig('images/averaged_singularity.png', bbox_inches='tight', dpi=300)
     #plt.show()
 
