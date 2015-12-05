@@ -188,7 +188,7 @@ def singularity_plot(fname):
 
         # compute data
         rolled_camp = np.rollaxis(camp, 2, 0)
-        lphase = compute_local_phase_field(camp) # decreases last dim due to tau
+        lphase = compute_local_phase_field(camp) # decreases time dim due to tau
         grads = compute_discrete_gradient(lphase)
         singularities = compute_singularity_measure(grads)
 
