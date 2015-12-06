@@ -11,6 +11,8 @@ from lattice_initializer import Generator
 from utils import animate_evolution, save_data, gen_run_identifier
 
 
+config = get_config()
+
 def integrate_system(system):
     """ Integrate ODE-CA hybrid with simple Euler method
         Levine et al. (1996)
@@ -29,31 +31,26 @@ def integrate_system(system):
     pbar.finish()
 
     camp_res, exci_res = system.parse_result(np.array(data))
-    return camp_res
+    return np.rollaxis(camp_res, 2) # roll axes to make time-access easier
 
-def plot_system(system, pacemakers):
-    """ Visualize system state over time
+def run_system(Generator):
+    """ Apply `Generator` and integrate and cache system
     """
-    # roll axes to make time-access easier
-    rolled_system = np.rollaxis(system, 2)
-
-    fname = gen_run_identifier()
-    save_data('data/%s' % fname, np.array([rolled_system, pacemakers]))
-
-    # create animation
-    animate_evolution(rolled_system, pacemakers)
-
-def main():
-    """ Main interface
-    """
-    global config
-    config = get_config()
-
     system = Generator(config.grid_size).generate()
     print(system)
 
     cres = integrate_system(system)
-    plot_system(cres, system.pacemakers)
+
+    fname = gen_run_identifier()
+    save_data('data/%s' % fname, np.array([cres, system.pacemakers]))
+
+    return system, cres
+
+def main():
+    """ Main interface
+    """
+    system, cres = run_system(Generator)
+    animate_evolution(cres, system.pacemakers)
 
 
 if __name__ == '__main__':
