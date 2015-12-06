@@ -174,37 +174,12 @@ def preprocess_data(data):
 
     return data
 
-def singularity_plot(fname):
+def singularity_plot(
+    pure_fname,
+    rolled_camp, lphase, grads,
+    singularities, avg_singularity, thres_singularity):
     """ Plot overview over singularity measure
     """
-    cache_dir = 'cache'
-    pure_fname = os.path.splitext(os.path.basename(fname))[0]
-
-    if not os.path.isdir(os.path.join(cache_dir, pure_fname)):
-        # preprocess input
-        camp, pacemaker = np.load(sys.argv[1])
-        camp = np.rollaxis(camp, 0, 3)
-        camp = preprocess_data(camp)
-
-        # compute data
-        rolled_camp = np.rollaxis(camp, 2, 0)
-        lphase = compute_local_phase_field(camp) # decreases time dim due to tau
-        grads = compute_discrete_gradient(lphase)
-        singularities = compute_singularity_measure(grads)
-
-        # cache data
-        os.path.join(cache_dir, pure_fname, '')
-        save_data(os.path.join(cache_dir, pure_fname, 'rolled_camp'), rolled_camp)
-        save_data(os.path.join(cache_dir, pure_fname, 'lphase'), lphase)
-        save_data(os.path.join(cache_dir, pure_fname, 'grads'), grads)
-        save_data(os.path.join(cache_dir, pure_fname, 'singularities'), singularities)
-    else:
-        print('Using cached data')
-        rolled_camp = np.load(os.path.join(cache_dir, pure_fname, 'rolled_camp.npy'))
-        lphase = np.load(os.path.join(cache_dir, pure_fname, 'lphase.npy'))
-        grads = np.load(os.path.join(cache_dir, pure_fname, 'grads.npy'))
-        singularities = np.load(os.path.join(cache_dir, pure_fname, 'singularities.npy'))
-
     # handle img directory
     img_dir = 'images'
     if not os.path.isdir(os.path.join(img_dir, pure_fname)):
@@ -241,6 +216,45 @@ def singularity_plot(fname):
 
     # averaged results
     fig, axarr = plt.subplots(1, 2, figsize=(10, 10))
+
+    show(avg_singularity, 'averaged singularity measure', axarr[0])
+    show(thres_singularity, 'thresholded singularity measure', axarr[1])
+
+    plt.savefig(os.path.join(img_dir, pure_fname, 'averaged_singularity.png'), bbox_inches='tight', dpi=300)
+    #plt.show()
+
+def compute_spiral_tip_density(fname, plot=True):
+    """ Compute spiral tip density of given example
+    """
+    cache_dir = 'cache'
+    pure_fname = os.path.splitext(os.path.basename(fname))[0]
+
+    if not os.path.isdir(os.path.join(cache_dir, pure_fname)):
+        # preprocess input
+        camp, pacemaker = np.load(sys.argv[1])
+        camp = np.rollaxis(camp, 0, 3)
+        camp = preprocess_data(camp)
+
+        # compute data
+        rolled_camp = np.rollaxis(camp, 2, 0)
+        lphase = compute_local_phase_field(camp) # decreases time dim due to tau
+        grads = compute_discrete_gradient(lphase)
+        singularities = compute_singularity_measure(grads)
+
+        # cache data
+        os.path.join(cache_dir, pure_fname, '')
+        save_data(os.path.join(cache_dir, pure_fname, 'rolled_camp'), rolled_camp)
+        save_data(os.path.join(cache_dir, pure_fname, 'lphase'), lphase)
+        save_data(os.path.join(cache_dir, pure_fname, 'grads'), grads)
+        save_data(os.path.join(cache_dir, pure_fname, 'singularities'), singularities)
+    else:
+        print('Using cached data')
+        rolled_camp = np.load(os.path.join(cache_dir, pure_fname, 'rolled_camp.npy'))
+        lphase = np.load(os.path.join(cache_dir, pure_fname, 'lphase.npy'))
+        grads = np.load(os.path.join(cache_dir, pure_fname, 'grads.npy'))
+        singularities = np.load(os.path.join(cache_dir, pure_fname, 'singularities.npy'))
+
+    # compute singularity measures
     avg_singularity = np.mean(singularities, axis=0)
 
     thres_singularity = avg_singularity.copy()
@@ -248,11 +262,19 @@ def singularity_plot(fname):
     thres_singularity[thres_singularity < -np.pi] = -2 * np.pi
     thres_singularity[(thres_singularity > -np.pi) & (thres_singularity < np.pi)] = 0
 
-    show(avg_singularity, 'averaged singularity measure', axarr[0])
-    show(thres_singularity, 'thresholded singularity measure', axarr[1])
+    # plot data if needed
+    if plot:
+        singularity_plot(
+            pure_fname,
+            rolled_camp, lphase, grads,
+            singularities, avg_singularity, thres_singularity
+        )
 
-    plt.savefig(os.path.join(img_dir, pure_fname, 'averaged_singularity.png'), bbox_inches='tight', dpi=300)
-    #plt.show()
+    # compute tip density
+    tip_num = np.count_nonzero(thres_singularity)
+    tip_density = float(tip_num) / thres_singularity.size
+
+    return tip_density
 
 
 def main():
@@ -262,7 +284,8 @@ def main():
         print('Usage: %s <data file>' % sys.argv[0])
         sys.exit(1)
 
-    singularity_plot(sys.argv[1])
+    density = compute_spiral_tip_density(sys.argv[1])
+    print(density)
 
 if __name__ == '__main__':
     main()
