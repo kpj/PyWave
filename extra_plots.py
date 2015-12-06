@@ -16,7 +16,7 @@ def neural_spike():
         """
         plt.plot(range(len(cell_evo)), cell_evo)
 
-    camp, pacemaker = np.load(sys.argv[1])
+    camp, pacemaker, used_config = np.load(sys.argv[1])
     camp = np.rollaxis(camp, 0, 3)
 
     width, height, depth = camp.shape
@@ -43,7 +43,7 @@ def lagged_phase_space():
 
         plt.plot(x, y, 'o')
 
-    camp, pacemaker = np.load(sys.argv[1])
+    camp, pacemaker, used_config = np.load(sys.argv[1])
     camp = np.rollaxis(camp, 0, 3)
 
     tau = compute_tau(camp)

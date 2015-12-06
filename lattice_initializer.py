@@ -63,4 +63,4 @@ class SingleSpiral(BaseGenerator):
 
 
 config = get_config()
-Generator = SingleSpiral
+Generator = Default

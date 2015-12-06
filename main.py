@@ -42,7 +42,9 @@ def run_system(Generator):
     cres = integrate_system(system)
 
     fname = gen_run_identifier()
-    save_data('data/%s' % fname, np.array([cres, system.pacemakers]))
+    save_data(
+        'data/%s' % fname,
+        np.array([cres, system.pacemakers, dict(config)]))
 
     return system, cres
 

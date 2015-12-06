@@ -58,7 +58,8 @@ def gen_run_identifier():
     """ Extract config parameters which are likely to be distinctive.
         Note: this requires a properly setup configuration
     """
-    return ('data_%d_%d_%.2f_%.3f_%s' % ( \
+    return ('data_%.4f_%d_%d_%.2f_%.3f__%s' % ( \
+        config.beta,
         config.grid_size, config.t_max,
         config.D, config.p,
         time.strftime('%Y%m%d%H%M%S'))).replace('.', 'p')

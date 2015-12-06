@@ -231,7 +231,7 @@ def compute_spiral_tip_density(fname, plot=True):
 
     if not os.path.isdir(os.path.join(cache_dir, pure_fname)):
         # preprocess input
-        camp, pacemaker = np.load(sys.argv[1])
+        camp, pacemaker, used_config = np.load(fname)
         camp = np.rollaxis(camp, 0, 3)
         camp = preprocess_data(camp)
 
@@ -248,7 +248,7 @@ def compute_spiral_tip_density(fname, plot=True):
         save_data(os.path.join(cache_dir, pure_fname, 'grads'), grads)
         save_data(os.path.join(cache_dir, pure_fname, 'singularities'), singularities)
     else:
-        print('Using cached data')
+        print(' > Using cached data')
         rolled_camp = np.load(os.path.join(cache_dir, pure_fname, 'rolled_camp.npy'))
         lphase = np.load(os.path.join(cache_dir, pure_fname, 'lphase.npy'))
         grads = np.load(os.path.join(cache_dir, pure_fname, 'grads.npy'))
