@@ -3,6 +3,7 @@ Conduct experiment which aims to reproduce figure 4a) from Sawai et al. (2005)
 """
 
 import os
+from multiprocessing import Pool
 
 import numpy as np
 import matplotlib.pylab as plt
@@ -14,28 +15,35 @@ from singularity_finder import compute_spiral_tip_density
 from utils import save_data
 
 
-config = get_config()
+def handle_run_system(beta):
+    """ Handle computations for single beta
+    """
+    config = get_config(beta=beta)
+    run_system(Generator)
+
+def handle_measure_tips(fname):
+    """ Compute tip density for given data
+    """
+    camp, pacemaker, used_config = np.load(fname)
+    density = compute_spiral_tip_density(fname, plot=False)
+
+    return (used_config['beta'], density)
 
 def generate_data(resolution=10):
     """ Generate simulation data and save it in data-files
     """
-    for beta in np.logspace(-4, 0, num=resolution, endpoint=False):
-        config.beta = beta
-        run_system(Generator)
+    log_vals = np.logspace(-4, 0, num=resolution, endpoint=False)
+    with Pool(resolution) as p:
+        p.map(handle_run_system, log_vals)
 
 def measure_tips(out_fname='results/experiment_run'):
     """ Compute spiral-tip density for all available data files
     """
     data_dir = 'data'
-    data = []
-    for fn in os.listdir(data_dir):
-        fname = os.path.join(data_dir, fn)
-        print(fn)
+    files = [os.path.join(data_dir, fn) for fn in os.listdir(data_dir)]
 
-        camp, pacemaker, used_config = np.load(fname)
-        density = compute_spiral_tip_density(fname, plot=False)
-
-        data.append((used_config['beta'], density))
+    with Pool(len(files)) as p:
+        data = p.map(handle_measure_tips, files)
 
     save_data(out_fname, data)
 

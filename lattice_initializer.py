@@ -25,7 +25,7 @@ class BaseGenerator(object):
         raise NotImplementedError('No lattice is being generated')
 
     @classmethod
-    def get_initial_state(self, system):
+    def get_initial_state(cls, system):
         """ Return lattice object
         """
         raise NotImplementedError('No initial state is being generated')
@@ -42,7 +42,7 @@ class Default(BaseGenerator):
         return LatticeState(self.width, self.height, pacemakers=pacemakers)
 
     @classmethod
-    def get_initial_state(self, system):
+    def get_initial_state(cls, system):
         return [0] * system.get_size() * 2
 
 class SingleSpiral(BaseGenerator):
@@ -50,7 +50,7 @@ class SingleSpiral(BaseGenerator):
         return LatticeState(self.width, self.height)
 
     @classmethod
-    def get_initial_state(self, system):
+    def get_initial_state(cls, system):
         w, h = system.width, system.height
 
         camp = np.zeros((w, h))

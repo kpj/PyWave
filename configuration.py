@@ -35,7 +35,8 @@ def setup_configuration(
 
 # setup model config
 global config
-def get_config():
+def get_config(**kwargs):
+    config.update(kwargs)
     return config
 
 config = setup_configuration()
