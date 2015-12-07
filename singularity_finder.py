@@ -119,29 +119,32 @@ def compute_local_phase_field(camp):
 
     return theta
 
-def integrate(cx, cy, radius, grad):
-    """ Integrate gradient along circle perimeter of given shape
-    """
-    rr, cc = circle_perimeter(
-        cx, cy, radius,
-        method='andres', shape=grad.shape
-    )
-    res = sum(grad[rr, cc])
-    return res
-
 @timed_run('Computing singularity measure')
 def compute_singularity_measure(gradients):
     """ Compute singularity measure of data
     """
+    # precompute closed curve coordinates
+    circle_rad = 5
+
+    grad_dim = gradients[0].shape
+    closed_curves = np.empty(grad_dim, dtype=(list, list))
+    for j in range(grad_dim[1]):
+        for i in range(grad_dim[0]):
+            rr, cc = circle_perimeter(
+                i, j, circle_rad,
+                method='andres', shape=grad_dim
+            )
+            closed_curves[i, j] = (rr, cc)
+
+    # find singularities
     singularities = []
     for grad in gradients:
         width, height = grad.shape
 
-        circle_rad = 5
         singularity = np.empty((width, height))
         for j in range(height):
             for i in range(width):
-                res = integrate(i, j, circle_rad, grad)
+                res = np.sum(grad[closed_curves[i, j]])
                 singularity[i, j] = res
         singularity = np.array(singularity)
 
