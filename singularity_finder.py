@@ -281,14 +281,22 @@ def compute_spiral_tip_density(fname, plot=True):
 
 
 def main():
-    """ Detect phase singularities
+    """ Detect phase singularity density and create overview plots
     """
     if len(sys.argv) != 2:
-        print('Usage: %s <data file>' % sys.argv[0])
+        print('Usage: %s <data file/dir>' % sys.argv[0])
         sys.exit(1)
 
-    density = compute_spiral_tip_density(sys.argv[1])
-    print(density)
+    arg = sys.argv[1]
+    if os.path.isdir(arg):
+        for fn in os.listdir(arg):
+            fname = os.path.join(arg, fn)
+
+            density = compute_spiral_tip_density(fname)
+            print(fn, density)
+    else:
+        density = compute_spiral_tip_density(arg)
+        print(density)
 
 if __name__ == '__main__':
     main()
