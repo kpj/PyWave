@@ -65,9 +65,6 @@ def compute_discrete_gradient(fields):
     """
     gradients = []
     for field in fields:
-        # fix phase jumps greater than PI
-        field = unwrap_phase(field)
-
         # finite difference operator
         fidi_op_x = np.diff(field, axis=0)
         fidi_op_x = np.vstack((fidi_op_x, fidi_op_x[-1]))
@@ -116,6 +113,10 @@ def compute_local_phase_field(camp):
             cur = compute_phase_variable(camp[i, j], tau)
             theta[i][j] = np.array(cur)
     theta = np.rollaxis(np.array(theta), 2, 0)
+
+    # fix phase jumps greater than PI
+    for i in range(len(theta)):
+        theta[i] = unwrap_phase(theta[i])
 
     return theta
 
