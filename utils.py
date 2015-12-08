@@ -21,6 +21,9 @@ def animate_evolution(states, pacemakers, fname='lattice.gif'):
     plt.gca().get_xaxis().set_visible(False)
     plt.gca().get_yaxis().set_visible(False)
 
+    # make animation smaller and faster
+    states = states[::10]
+
     im = plt.imshow(
         states[0],
         cmap=cm.gray, interpolation='nearest',
@@ -84,8 +87,32 @@ if __name__ == '__main__':
     import sys
 
     if len(sys.argv) != 2:
-        print('Usage: %s <data file>' % sys.argv[0])
+        print('Usage: %s <data file/dir>' % sys.argv[0])
         sys.exit(1)
 
-    data = np.load(sys.argv[1])
-    animate_evolution(data[0], data[1])
+    def get_savedir(arg):
+        """ Figure out where to save images for this data file and
+            make sure the directory actually exists
+        """
+        img_dir = 'images'
+        pure_fname = os.path.splitext(os.path.basename(arg))[0]
+        save_dir = os.path.join(img_dir, pure_fname)
+
+        if not os.path.isdir(save_dir):
+            os.makedirs(save_dir)
+
+        return save_dir
+
+    arg = sys.argv[1]
+    if os.path.isdir(arg):
+        for fn in os.listdir(arg):
+            fname = os.path.join(arg, fn)
+            camp, pacemaker, used_config = np.load(fname)
+
+            out_name = os.path.join(get_savedir(fname), 'lattice_evolution.gif')
+            animate_evolution(camp, pacemaker, fname=out_name)
+    else:
+        camp, pacemaker, used_config = np.load(arg)
+
+        out_name = os.path.join(get_savedir(arg), 'lattice_evolution.gif')
+        animate_evolution(camp, pacemaker, fname=out_name)
