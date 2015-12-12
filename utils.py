@@ -15,14 +15,14 @@ from configuration import get_config
 
 config = get_config()
 
-def animate_evolution(states, pacemakers, fname='lattice.gif'):
+def animate_evolution(states, pacemakers, fname='lattice.gif', truncate=True):
     """ Animation evolution of lattice over time
     """
     plt.gca().get_xaxis().set_visible(False)
     plt.gca().get_yaxis().set_visible(False)
 
-    # make animation smaller and faster
-    states = states[::10]
+    if truncate: # make animation smaller and faster
+        states = states[::10]
 
     im = plt.imshow(
         states[0],

@@ -2,8 +2,9 @@
 Reproduction of figure from Sawai et al. (2005)
 """
 
-import numpy as np
+import collections
 
+import numpy as np
 from progressbar import ProgressBar
 
 from configuration import get_config
@@ -21,7 +22,7 @@ def integrate_system(system):
     state = Generator.get_initial_state(system)
 
     pbar = ProgressBar(maxval=config.t_max)
-    data = []
+    data = collections.deque(maxlen=config.max_state_len)
     pbar.start()
     while t < config.t_max:
         data.append(state)

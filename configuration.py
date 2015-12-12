@@ -19,7 +19,8 @@ def setup_configuration(
         c_min=4, c_max=100,
         t_arp=2, t_rrp=7, t_f=1,
         e_max=0.93,
-        dt=0.01, t_max=1000, grid_size=100):
+        dt=0.01, t_max=1000, grid_size=100,
+        max_state_len=2000):
     """ Set model paremeters
     """
     return Configuration({
@@ -29,7 +30,8 @@ def setup_configuration(
         'c_min': c_min, 'c_max': c_max,
         't_arp': t_arp, 't_rrp': t_rrp, 't_f': t_f,
         'e_max': e_max,
-        'dt': dt, 't_max': t_max, 'grid_size': grid_size
+        'dt': dt, 't_max': t_max, 'grid_size': grid_size,
+        'max_state_len': max_state_len
     })
 
 
